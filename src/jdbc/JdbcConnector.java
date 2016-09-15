@@ -18,6 +18,63 @@ public class JdbcConnector {
  	private Connection myConn = null;
 	private Statement stmt = null;
 	
+	public void backup() {
+		ArrayList<String> columns = new ArrayList<String>();
+				
+		columns.add("id");
+		columns.add("first_name");
+		columns.add("last_name");
+		columns.add("gpa");
+		columns.add("major_id");
+		columns.add("sat_score");
+		
+		this.execSelect("* from student");
+		ArrayList<ArrayList<String>> current = this.getResults(columns);
+		String sb = "";
+		
+		for (ArrayList<String> record : current) {
+			sb += "insert student (id,first_name,last_name,gpa,major_id,sat_score) values ("
+					+ record.get(0) + ", " + record.get(1) + ", " + record.get(2) + ", "
+					+ record.get(3) + ", " + record.get(4) + ", " + record.get(5) + ");\n";
+		}
+		System.out.println(sb);
+	}
+	
+	public void printMetaData() {
+		DatabaseMetaData dbmd = null;
+		try {
+			dbmd = myConn.getMetaData();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		ResultSet rs = null;
+		try {
+			rs = dbmd.getTables(null, null, null, null);
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		try {
+			while (rs.next()) {
+				String tableName = rs.getString("TABLE_NAME");
+				System.out.println(tableName);
+				this.execSelect("* from " + tableName);
+				ResultSet rs2 = stmt.getResultSet();
+				ResultSetMetaData rsmd = rs2.getMetaData();
+				for (int i=1;i<=rsmd.getColumnCount();i++) {
+					System.out.println('\t' + rsmd.getColumnLabel(i) + ": " + 
+							rsmd.getColumnTypeName(i) + "(" + rsmd.getPrecision(i) + ")" + 
+							" [" +rsmd.getColumnDisplaySize(i) + "]");
+				}
+				
+			}
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
 	public String getDbName() {
 		return this.dbName;
 	}
@@ -29,7 +86,7 @@ public class JdbcConnector {
 		columns.add(column);
 		ArrayList<ArrayList<String>> temp = this.getResults(columns);
 		for (ArrayList<String> record : temp) {
-			if (record.get(1).equals(value))
+			if (record.get(1).equalsIgnoreCase(value))
 				return record.get(0);
 		}
 		return null;
@@ -91,7 +148,7 @@ public class JdbcConnector {
 				ArrayList<String> temp = new ArrayList<String>();
 				for(String colName : columns) {
 					String res = results.getString(colName);
-					temp.add((res==null)?"None Provided":res);
+					temp.add((res==null)?"N/A":res);
 				}
 				resultList.add(temp);
 			}
