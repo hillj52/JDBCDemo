@@ -24,6 +24,7 @@ public class DBConnector {
 	private static String ALL_CLASSES = "select class.id from class";
 	private static String LAST_ID = "select last_insert_id()";
 	private static String FULL_NAME = "select concat(last_name,', ',first_name) from student where id = ?";
+	private static String CLASS_NAME = "select concat(subject,'-',section) from class where id = ?";
 	
 	private static StudentTransLog log;
 	
@@ -64,7 +65,7 @@ public class DBConnector {
 			prepStmt.setInt(1, studentId);
 			prepStmt.setInt(2, classId);
 			prepStmt.executeUpdate();
-			String sb = "Enrolled " + this.getFullName(studentId) + " in class: " + classId + " which is ";
+			String sb = "Enrolled " + this.getFullName(studentId) + " in class: " + this.getClassName(classId) + " which is ";
 			sb+=isInMajor?"in major":"not in major";
 			DBConnector.log.add(studentId,sb);
 		} catch (SQLException e) {
@@ -195,6 +196,14 @@ public class DBConnector {
 		return results.getString(1);
 	}
 	
+	private String getClassName(int classId) throws SQLException {
+		this.prepStmt = this.createPreparedStatement(CLASS_NAME);
+		prepStmt.setInt(1, classId);
+		ResultSet results = prepStmt.executeQuery();
+		results.next();
+		return results.getString(1);
+	}
+	
 	private String printOpenMajors(int sat_score) {
 		String sb = "";
 		try {
@@ -202,9 +211,9 @@ public class DBConnector {
 			this.prepStmt = this.createPreparedStatement(MAJORS_OPEN);
 			prepStmt.setInt(1, sat_score);
 			ResultSet results = prepStmt.executeQuery();
-			sb += "Available Majors with " + sat_score + " sat score:\n";
+			sb += "Available Majors with " + sat_score + " sat score:";
 			while(results.next()) {
-				sb += results.getString(1) + '\n';
+				sb += '\n' + results.getString(1);
 			}
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block

@@ -8,6 +8,7 @@ public class Student {
 	private String firstName;
 	private String lastName;
 	private int sat;
+	@SuppressWarnings("unused")
 	private double gpa;
 	private int majorId = -1;
 	private ArrayList<Integer> classes;
