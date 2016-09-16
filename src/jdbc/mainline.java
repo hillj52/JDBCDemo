@@ -5,27 +5,22 @@ import java.util.ArrayList;
 public class Mainline {
 
 	public static void main(String[] args) {
+	
+		Students studentList = new Students();
+		
 		DBConnector dbc = DBConnector.getInstance();
 		
-		dbc.enrollStudent("Adam", "Zapel", 1200, 3.0);
-		dbc.updateMajor("Adam", "Zapel", "Finance");
-//		dbc.signUpClasses("Adam","Zapel");
+		studentList.add(new Student("Adam", "Zapel", 1200, 3.0,"Finance"));
+		studentList.add(new Student("Graham", "Krakir", 500, 2.5,"General Studies"));
+		studentList.add(new Student("Ella", "Vader", 800, 3.0,"Accounting"));
+		studentList.add(new Student("Stanley", "Kupp", 1350, 3.3,"Accounting"));
+		studentList.add(new Student("Lou", "Zar", 950, 3.0,"Education"));
+	
+		for (Student s : studentList) {
+			s.enrollInClasses();
+		}
 		
-		dbc.enrollStudent("Graham", "Krakir", 500, 2.5);
-		dbc.updateMajor("Graham", "Krakir", "General Studies");
-//		dbc.signUpClasses("Graham","Krakir");
-		
-		dbc.enrollStudent("Ella", "Vader", 800, 3.0);
-		dbc.updateMajor("Ella", "Vader", "Accounting");
-//		dbc.signUpClasses("Adam","Zapel");
-		
-		dbc.enrollStudent("Stanley", "Kupp", 1350, 3.3);
-		dbc.updateMajor("Stanley", "Kupp", "Accounting");
-//		dbc.signUpClasses("Adam","Zapel");
-		
-		dbc.enrollStudent("Lou", "Zar", 950, 3.0);
-		dbc.updateMajor("Lou", "Zar", "Education");
-//		dbc.signUpClasses("Adam","Zapel");
+		System.out.println(dbc.getLogString());
 		
 //		JdbcConnector myJdbc = new JdbcConnector("tiy");
 //		ArrayList<String> studentColumns = new ArrayList<String>();
