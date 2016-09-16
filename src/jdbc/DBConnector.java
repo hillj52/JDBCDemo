@@ -23,6 +23,7 @@ public class DBConnector {
 			+ "and major_class_relationship.class_id = class.id";
 	private static String ALL_CLASSES = "select class.id from class";
 	private static String LAST_ID = "select last_insert_id()";
+	private static String FULL_NAME = "select concat(last_name,', ',first_name) from student where id = ?";
 	
 	private static StudentTransLog log;
 	
@@ -63,7 +64,7 @@ public class DBConnector {
 			prepStmt.setInt(1, studentId);
 			prepStmt.setInt(2, classId);
 			prepStmt.executeUpdate();
-			String sb = "Enrolled student: " + studentId + " in class: " + classId + " which is ";
+			String sb = "Enrolled " + this.getFullName(studentId) + " in class: " + classId + " which is ";
 			sb+=isInMajor?"in major":"not in major";
 			DBConnector.log.add(studentId,sb);
 		} catch (SQLException e) {
@@ -88,7 +89,8 @@ public class DBConnector {
 			ResultSet result = prepStmt.executeQuery();
 			result.next();
 			studentId = result.getInt(1);
-			DBConnector.log.add(studentId,"Student: " + lastName + ", " + firstName + " enrolled in Ball So Hard University! Student Id: " + studentId);
+			DBConnector.log.add(studentId,"Enrolled " + this.getFullName(studentId) + 
+					" as a student at Ball So Hard University! Student Id: " + studentId);
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -107,7 +109,9 @@ public class DBConnector {
 				prepStmt.setInt(1, majorInfo.get(0));
 				prepStmt.setInt(2, studentId);
 				prepStmt.executeUpdate();
-				DBConnector.log.add(studentId, "Assigned student: " + studentId + " to the major: " + newMajor);
+				DBConnector.log.add(studentId,this.getFullName(studentId) + " has an sat score of " + studentSat);
+				DBConnector.log.add(studentId, "Assigned " + this.getFullName(studentId) + " to the major " + newMajor + 
+						" which requires an sat score of " + majorInfo.get(1));
 			} catch (SQLException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -115,7 +119,16 @@ public class DBConnector {
 				this.close();
 			}
 		} else {
-			DBConnector.log.add(studentId,"Failed to assign student: " + studentId + " to the " + 
+			try {
+				this.connect();
+				DBConnector.log.add(studentId,this.getFullName(studentId) + " has an sat score of " + studentSat);
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} finally {
+				this.close();
+			}
+			DBConnector.log.add(studentId,"Failed to assign student to the " + 
 				newMajor + " major, due to a required Sat score of " + majorInfo.get(1));
 			DBConnector.log.add(studentId,this.printOpenMajors(studentSat));
 		}
@@ -172,6 +185,14 @@ public class DBConnector {
 			this.close();
 		}
 		return classes;
+	}
+	
+	private String getFullName(int studentId) throws SQLException {
+		this.prepStmt = this.createPreparedStatement(FULL_NAME);
+		prepStmt.setInt(1, studentId);
+		ResultSet results = prepStmt.executeQuery();
+		results.next();
+		return results.getString(1);
 	}
 	
 	private String printOpenMajors(int sat_score) {
